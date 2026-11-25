@@ -34,15 +34,23 @@ curl -fsSL https://github.com/gokerbekir66/gkrstudio-releases/releases/latest/do
 It picks the right package for your Mac, installs GKR Studio into Applications and starts it.
 Then enable GKR Studio in **System Settings → Privacy & Security → Accessibility**.
 
-### Windows
+### Windows: one-line install (recommended)
 
-Extract the ZIP and run `GKRStudio.exe` (if SmartScreen appears: **More info → Run anyway**). Answer **Yes** on first start.
+Open **PowerShell** and paste:
+
+```powershell
+irm https://github.com/gokerbekir66/gkrstudio-releases/releases/latest/download/install-windows.ps1 | iex
+```
+
+It installs GKR Studio in your user folder (no admin rights needed), adds it to the Start menu and starts it. Answer **Yes** on first start.
+
+Or download the ZIP from the table above, extract it and run `GKRStudio.exe` (if SmartScreen appears: **More info → Run anyway**).
 
 ## Features
 
 - **Shift / Ctrl / Alt + right-click** (Mac: Shift / ⌘ Command / ⌥ Option): Convert · Tools · Actions wheels
 - Images, video, audio, PDF, documents, spreadsheets, presentations, EPUB, subtitles and archives
-- Download video / MP3 from links, OCR, QR code reading
+- Download video / MP3 from YouTube and many other sites (optionally with your browser's cookies), OCR, QR code reading
 - English, Turkish, Dutch and French
 - Signed automatic updates
 
