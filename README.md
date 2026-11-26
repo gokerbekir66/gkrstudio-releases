@@ -63,6 +63,7 @@ FFmpeg (GPL), yt-dlp and Deno are bundled in the Windows and macOS packages, so 
 
 | Version | Changes |
 |---|---|
+| 1.3.5 | macOS: the app is signed before it is moved into Applications, so installs no longer hit "Operation not permitted"; leftovers of the old LionMedia version are removed |
 | 1.3.4 | macOS: ffmpeg, yt-dlp and Deno are included; video downloads work without Homebrew |
 | 1.3.3 | macOS: fixed a crash when choosing a wheel slice while still holding ⌘ (e.g. Convert → Word) |
 | 1.3.2 | PDF → Word: PDFs whose text can't be separated come over as pictures instead of empty pages |
