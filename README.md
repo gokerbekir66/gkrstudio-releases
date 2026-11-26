@@ -50,11 +50,27 @@ Or download the ZIP from the table above, extract it and run `GKRStudio.exe` (if
 
 - **Shift / Ctrl / Alt + right-click** (Mac: Shift / ⌘ Command / ⌥ Option): Convert · Tools · Actions wheels
 - Images, video, audio, PDF, documents, spreadsheets, presentations, EPUB, subtitles and archives
-- Download video / MP3 from YouTube and many other sites (optionally with your browser's cookies), OCR, QR code reading
+- Download video / MP3 from YouTube and many other sites (optionally with your browser's cookies), QR code reading
+- **PDF → Word that keeps the layout**: pictures, backgrounds and tables stay in place; the text stays editable with its font, size and colour
+- **OCR** for scanned PDFs: a searchable, selectable text layer, only the pages you choose, with progress and time left; **Improve text** redraws blurry scanned text sharply (Windows)
+- **Offline translation** of documents, e-books, subtitles and PDFs (Turkish, English, Dutch, French, German, Spanish, Arabic); language packs are downloaded only when you choose them
 - English, Turkish, Dutch and French
 - Signed automatic updates
 
-FFmpeg (GPL), yt-dlp and Deno are bundled in the Windows package; licenses and source links are in `tools/LISANSLAR.txt`.
+FFmpeg (GPL), yt-dlp and Deno are bundled in the Windows and macOS packages, so nothing else needs to be installed for downloads and media. Licenses and source links: `tools/LISANSLAR.txt` (Windows), `GKR Studio.app/Contents/Resources/licenses` (macOS).
+
+## What's new
+
+| Version | Changes |
+|---|---|
+| 1.3.4 | macOS: ffmpeg, yt-dlp and Deno are included; video downloads work without Homebrew |
+| 1.3.3 | macOS: fixed a crash when choosing a wheel slice while still holding ⌘ (e.g. Convert → Word) |
+| 1.3.2 | PDF → Word: PDFs whose text can't be separated come over as pictures instead of empty pages |
+| 1.3.1 | PDF → Word keeps the layout (pictures, backgrounds, positions); OCR text layer is invisible again on Windows — run OCR again on files made with an older version |
+| 1.3.0 | Offline translation with downloadable language packs |
+| 1.2.3 – 1.2.9 | Faster OCR with progress and time left, page choice, smaller OCR PDFs, Improve text, reliable in-app updates on Windows |
+
+All versions: [Releases](https://github.com/gokerbekir66/gkrstudio-releases/releases).
 
 ## Lion-bite animation 🦁
 
