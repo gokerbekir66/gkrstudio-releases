@@ -92,6 +92,7 @@ FFmpeg (GPL), yt-dlp and Deno are bundled in the Windows and macOS packages, so 
 
 | Version | Changes |
 |---|---|
+| 1.3.7 | New fire animation when choosing a slice (replaces the lion bite) |
 | 1.3.6 | The QR tool is now called QR reader |
 | 1.3.5 | macOS: the app is signed before it is moved into Applications, so installs no longer hit "Operation not permitted"; leftovers of the old LionMedia version are removed |
 | 1.3.4 | macOS: ffmpeg, yt-dlp and Deno are included; video downloads work without Homebrew |
@@ -103,12 +104,12 @@ FFmpeg (GPL), yt-dlp and Deno are bundled in the Windows and macOS packages, so 
 
 All versions: [Releases](https://github.com/gokerbekir66/gkrstudio-releases/releases).
 
-## Lion-bite animation 🦁
+## Fire animation 🔥
 
-With **Settings → Lion-bite animation when choosing** turned on, the lion bites the slice you pick.
+With **Settings → Fire animation when choosing** turned on, the slice you pick bursts into flames, sparks fly up, it chars black and the wheel fades out.
 
 <p align="center">
-  <img src="screenshots/bite.gif" alt="Lion-bite animation: the lion bites the chosen PNG slice" width="440">
+  <img src="screenshots/fire.gif" alt="Fire animation: the chosen PNG slice catches fire and burns" width="440">
 </p>
 
 ## Settings
