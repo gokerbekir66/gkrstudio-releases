@@ -92,6 +92,7 @@ FFmpeg (GPL), yt-dlp and Deno are bundled in the Windows and macOS packages, so 
 
 | Version | Changes |
 |---|---|
+| 1.3.9 | Fire takes the hue of your accent colour; settings sections fold open and closed; built-in tools shown under "Built-in tools (advanced)" |
 | 1.3.8 | Fire animation now burns the slice like paper, with big flames, ash and sparks |
 | 1.3.7 | New fire animation when choosing a slice (replaces the lion bite) |
 | 1.3.6 | The QR tool is now called QR reader |
@@ -107,7 +108,7 @@ All versions: [Releases](https://github.com/gokerbekir66/gkrstudio-releases/rele
 
 ## Fire animation 🔥
 
-With **Settings → Fire animation when choosing** turned on, the slice you pick burns like paper: a glowing edge eats it from the rim inward with big flames on top, the burnt part falls away and ash and sparks drift up.
+With **Settings → Fire animation when choosing** turned on, the slice you pick burns like paper: a glowing edge eats it from the rim inward with big flames on top, the burnt part falls away and ash and sparks drift up. The flames take the hue of your accent colour (orange = classic fire, blue = gas flame).
 
 <p align="center">
   <img src="screenshots/fire.gif" alt="Fire animation: the chosen PNG slice burns away like paper" width="440">
