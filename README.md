@@ -8,11 +8,22 @@ Convert, edit and download files straight from a radial wheel — on **Windows**
 
 <p align="center">
   <img src="screenshots/wheel.png" alt="GKR Studio wheel for an image: Convert, Tools and Actions" width="380">
-  <img src="screenshots/wheel-convert.png" alt="Convert wheel for an image: PNG, JPG, WEBP, TIFF, AVIF, BMP, GIF, ICO, PDF" width="380">
 </p>
-<p align="center">
-  <img src="screenshots/wheel-actions.png" alt="Actions wheel: share, float shelf, copy, move, copy path, terminal, ZIP" width="380">
-</p>
+
+Right-click without a key opens the wheel above with three parts: **Convert**, **Tools** and **Actions**. With a key held you go straight to one part: **Shift** = Convert, **Ctrl** = Tools, **Alt** = Actions (Windows defaults; the keys can be changed in Settings).
+
+## Convert wheel: what each format is for
+
+The **Convert** wheel (Shift + right-click) shows the formats that make sense for the file type.
+
+**Photos**
+<p align="center"><img src="screenshots/wheel-convert-photo.png" alt="Convert wheel for photos: PNG, JPG, WEBP, TIFF, AVIF, BMP, GIF, ICO, PDF, each with a short explanation" width="820"></p>
+
+**PDF files**
+<p align="center"><img src="screenshots/wheel-convert-pdf.png" alt="Convert wheel for PDF files: DOCX, XLSX, JPG, PNG, EPUB, TXT, MD, each with a short explanation" width="820"></p>
+
+**Word documents**
+<p align="center"><img src="screenshots/wheel-convert-word.png" alt="Convert wheel for Word documents: DOCX, PDF, TXT, HTML, EPUB, PNG, JPG, MD, each with a short explanation" width="820"></p>
 
 ## Tools wheel: what each tool does
 
@@ -26,6 +37,12 @@ The **Tools** wheel (Ctrl + right-click) shows different tools for each file typ
 
 **Word documents**
 <p align="center"><img src="screenshots/wheel-tools-word.png" alt="Tools wheel for Word documents: offline translate" width="820"></p>
+
+## Actions wheel: what each action does
+
+The **Actions** wheel (Alt + right-click) is the same for every file type and also works on folders.
+
+<p align="center"><img src="screenshots/wheel-actions-explained.png" alt="Actions wheel: share, float shelf, copy, move, copy path, terminal, ZIP, each with a short explanation" width="820"></p>
 
 ## Download
 
