@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -11,17 +11,22 @@ using GKRStudio.Core;
 namespace GKRStudio.UI;
 
 /// <summary>
-/// Image editor: crop, freehand marker, rectangle, rotate, horizontal flip, undo. Every edit is flattened into
-/// the bitmap immediately (simple, predictable undo). Saving writes a NEW file "(düzenlendi)" next to the original.
+/// Image editor: crop, freehand marker, rectangle, rotate, horizontal flip, redact (rectangle or freehand area), undo.
+/// Every edit is flattened into the bitmap immediately (simple, predictable undo). Saving writes a NEW file
+/// "(düzenlendi)" / "(sansürlü)" next to the original.
 /// </summary>
 public sealed class ImageEditorWindow : Window
 {
-    private enum Tool { Marker, Rect, Arrow, Text, Crop }
+    private enum Tool { Marker, Rect, Arrow, Text, Crop, Redact, RedactFree }
 
     private readonly string input;
     private readonly Stack<BitmapSource> undo = new();
     private BitmapSource bmp;
     private Tool tool = Tool.Marker;
+    private readonly bool redactMode;
+    private string redactStyle = "Bulanık";
+    private readonly Dictionary<string, Button> styleButtons = [];
+    private readonly Border busy;
 
     private readonly Image image = new() { Stretch = Stretch.Fill };
     private readonly Canvas overlay = new() { Background = Brushes.Transparent, Cursor = Cursors.Pen };
@@ -38,9 +43,10 @@ public sealed class ImageEditorWindow : Window
     private static readonly Color MarkerColor = Color.FromArgb(0x99, 0xFF, 0xE0, 0x3B);
     private static readonly Color RectColor = Color.FromRgb(0xFF, 0x3B, 0x30);
 
-    public ImageEditorWindow(string path, bool cropMode = false)
+    public ImageEditorWindow(string path, bool cropMode = false, bool redactMode = false)
     {
         input = path;
+        this.redactMode = redactMode;
         bmp = ImageTools.Load(path);
         Style = (Style)Application.Current.FindResource("AppWindow");
         Icon = new BitmapImage(new Uri("pack://application:,,,/Assets/app.ico"));
@@ -57,7 +63,10 @@ public sealed class ImageEditorWindow : Window
         }
 
         var bar = new WrapPanel { Margin = new Thickness(12, 10, 12, 6) };
-        foreach (var (t, label) in new[] { (Tool.Marker, "🖍 Kalem"), (Tool.Rect, "▭ Dikdörtgen"), (Tool.Arrow, "➜ Ok"), (Tool.Text, "T Metin"), (Tool.Crop, "✂ Kırpma alanı") })
+        var tools = redactMode
+            ? new[] { (Tool.RedactFree, "✎ Serbest alan"), (Tool.Redact, "▭ Dikdörtgen alan") }
+            : new[] { (Tool.Marker, "🖍 Kalem"), (Tool.Rect, "▭ Dikdörtgen"), (Tool.Arrow, "➜ Ok"), (Tool.Text, "T Metin"), (Tool.Crop, "✂ Kırpma alanı"), (Tool.RedactFree, "▒ Sansürle") };
+        foreach (var (t, label) in tools)
         {
             var b = B(label, () => SetTool(t));
             toolButtons[t] = b;
@@ -65,11 +74,21 @@ public sealed class ImageEditorWindow : Window
         }
         applyCrop = B("Kırp", ApplyCrop);
         applyCrop.IsEnabled = false;
-        bar.Children.Add(applyCrop);
         bar.Children.Add(new Separator { Width = 12, Visibility = Visibility.Hidden });
-        bar.Children.Add(B("⟲ Sola", () => Commit(new TransformedBitmap(bmp, new RotateTransform(270)))));
-        bar.Children.Add(B("⟳ Sağa", () => Commit(new TransformedBitmap(bmp, new RotateTransform(90)))));
-        bar.Children.Add(B("⇋ Yansıt", () => Commit(new TransformedBitmap(bmp, new ScaleTransform(-1, 1)))));
+        foreach (var style in new[] { "Bulanık", "Piksel", "Siyah" })
+        {
+            var b = B(style, () => SetStyle(style));
+            styleButtons[style] = b;
+            bar.Children.Add(b);
+        }
+        if (!redactMode)
+        {
+            bar.Children.Add(new Separator { Width = 12, Visibility = Visibility.Hidden });
+            bar.Children.Add(applyCrop);
+            bar.Children.Add(B("⟲ Sola", () => Commit(new TransformedBitmap(bmp, new RotateTransform(270)))));
+            bar.Children.Add(B("⟳ Sağa", () => Commit(new TransformedBitmap(bmp, new RotateTransform(90)))));
+            bar.Children.Add(B("⇋ Yansıt", () => Commit(new TransformedBitmap(bmp, new ScaleTransform(-1, 1)))));
+        }
         undoButton = B("↶ Geri al", Undo);
         undoButton.IsEnabled = false;
         bar.Children.Add(undoButton);
@@ -80,10 +99,28 @@ public sealed class ImageEditorWindow : Window
         var stack = new Grid();
         stack.Children.Add(image);
         stack.Children.Add(overlay);
+        busy = new Border
+        {
+            Background = new SolidColorBrush(Color.FromArgb(0xC0, 0x10, 0x10, 0x14)), CornerRadius = new CornerRadius(10),
+            Padding = new Thickness(22, 14, 22, 14), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center,
+            Visibility = Visibility.Collapsed, IsHitTestVisible = false,
+            Child = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Children =
+                {
+                    new ProgressBar { IsIndeterminate = true, Width = 90, Height = 6, Margin = new Thickness(0, 0, 12, 0), VerticalAlignment = VerticalAlignment.Center },
+                    new TextBlock { Text = L.T("İşleniyor…"), Foreground = Brushes.White, FontSize = 14, VerticalAlignment = VerticalAlignment.Center },
+                },
+            },
+        };
         var root = new DockPanel();
         DockPanel.SetDock(bar, Dock.Top);
         root.Children.Add(bar);
-        root.Children.Add(new Viewbox { Child = stack, Margin = new Thickness(12), Stretch = Stretch.Uniform, StretchDirection = StretchDirection.Both });
+        var area = new Grid();
+        area.Children.Add(new Viewbox { Child = stack, Margin = new Thickness(12), Stretch = Stretch.Uniform, StretchDirection = StretchDirection.Both });
+        area.Children.Add(busy);
+        root.Children.Add(area);
         Content = root;
 
         overlay.MouseLeftButtonDown += OnDown;
@@ -97,7 +134,15 @@ public sealed class ImageEditorWindow : Window
         };
 
         Show(bmp);
-        SetTool(cropMode ? Tool.Crop : Tool.Marker);
+        SetTool(redactMode ? Tool.RedactFree : cropMode ? Tool.Crop : Tool.Marker);
+        SetStyle(redactStyle, switchTool: false);
+    }
+
+    private void SetStyle(string style, bool switchTool = true)
+    {
+        redactStyle = style;
+        foreach (var (k, b) in styleButtons) b.BorderBrush = k == style ? (Brush)FindResource("Accent") : (Brush)FindResource("Line");
+        if (switchTool && tool is not (Tool.Redact or Tool.RedactFree)) SetTool(Tool.RedactFree);
     }
 
     private double Thickness(double factor) => Math.Max(3, Math.Min(bmp.PixelWidth, bmp.PixelHeight) * factor);
@@ -107,7 +152,14 @@ public sealed class ImageEditorWindow : Window
         tool = t;
         ClearOverlay();
         foreach (var (k, b) in toolButtons) b.BorderBrush = k == t ? (Brush)FindResource("Accent") : (Brush)FindResource("Line");
-        overlay.Cursor = t == Tool.Crop ? Cursors.Cross : Cursors.Pen;
+        bool redact = t is Tool.Redact or Tool.RedactFree;
+        overlay.Cursor = t == Tool.Crop || redact ? Cursors.Cross : Cursors.Pen;
+        foreach (var b in styleButtons.Values) b.Opacity = redact ? 1 : 0.55;
+        if (redact)
+        {
+            status.Text = L.T(t == Tool.RedactFree ? "Gizlenecek alanın çevresini fareyle çizin" : "Gizlenecek alanı fareyle sürükleyerek seçin");
+            status.Foreground = (Brush)FindResource("Muted");
+        }
     }
 
     private void Show(BitmapSource b)
@@ -127,6 +179,7 @@ public sealed class ImageEditorWindow : Window
 
     private void OnDown(object sender, MouseButtonEventArgs e)
     {
+        if (busy.Visibility == Visibility.Visible) return;
         ClearOverlay();
         start = Pos(e);
         overlay.CaptureMouse();
@@ -139,6 +192,15 @@ public sealed class ImageEditorWindow : Window
             case Tool.Arrow:
                 arrow = new Line { X1 = start.X, Y1 = start.Y, X2 = start.X, Y2 = start.Y, Stroke = new SolidColorBrush(RectColor), StrokeThickness = Thickness(1 / 150.0), StrokeEndLineCap = PenLineCap.Triangle };
                 overlay.Children.Add(arrow);
+                break;
+            case Tool.RedactFree:
+                stroke = new Polyline
+                {
+                    Stroke = Brushes.White, StrokeThickness = Thickness(1 / 400.0), StrokeDashArray = [4, 3],
+                    Fill = new SolidColorBrush(Color.FromArgb(0x40, 0x5B, 0x8C, 0xFF)), StrokeLineJoin = PenLineJoin.Round,
+                };
+                stroke.Points.Add(start);
+                overlay.Children.Add(stroke);
                 break;
             case Tool.Marker:
                 stroke = new Polyline
@@ -208,6 +270,20 @@ public sealed class ImageEditorWindow : Window
                 Commit(Render(dc => { dc.DrawLine(pen, start, b + dir * t * 0.5); dc.DrawGeometry(arrow.Stroke, null, headGeo); }));
                 break;
             }
+            case Tool.RedactFree when stroke is { Points.Count: > 2 }:
+            {
+                var fig = new PathFigure { StartPoint = stroke.Points[0], IsClosed = true, IsFilled = true };
+                fig.Segments.Add(new PolyLineSegment(stroke.Points.Skip(1), true));
+                var geometry = new PathGeometry([fig]) { FillRule = FillRule.Nonzero };
+                if (geometry.Bounds.Width > 2 && geometry.Bounds.Height > 2) { ApplyRedact(geometry); return; }
+                break;
+            }
+            case Tool.Redact when shape != null:
+            {
+                var r = new Rect(start, end);
+                if (r.Width > 2 && r.Height > 2) { ApplyRedact(new RectangleGeometry(r)); return; }
+                break;
+            }
             case Tool.Crop:
             {
                 var r = new Rect(start, end);
@@ -218,6 +294,22 @@ public sealed class ImageEditorWindow : Window
             }
         }
         ClearOverlay();
+    }
+
+    /// <summary>Redacts inside the window: the selection stays visible under a small "working" badge, nothing closes.</summary>
+    private void ApplyRedact(Geometry area)
+    {
+        area.Freeze();
+        var source = bmp;
+        string style = redactStyle;
+        busy.Visibility = Visibility.Visible;
+        // let the badge paint first, then do the work at a lower priority
+        Dispatcher.InvokeAsync(() =>
+        {
+            try { Commit(ImageTools.Redact(source, area, style)); }
+            catch (Exception ex) { MessageBox.Show(this, ex.Message, "GKR Studio", MessageBoxButton.OK, MessageBoxImage.Error); }
+            finally { busy.Visibility = Visibility.Collapsed; ClearOverlay(); }
+        }, System.Windows.Threading.DispatcherPriority.Background);
     }
 
     /// <summary>White text with a dark outline, readable on any background.</summary>
@@ -297,7 +389,7 @@ public sealed class ImageEditorWindow : Window
         try
         {
             string ext = ImageTools.SameFormat(input);
-            string output = OutputPaths.Beside(input, ext, "(düzenlendi)");
+            string output = OutputPaths.Beside(input, ext, redactMode ? "(sansürlü)" : "(düzenlendi)");
             ImageTools.Save(bmp, ext, output);
             status.Text = L.T("Kaydedildi: ") + System.IO.Path.GetFileName(output);
             status.Foreground = (Brush)FindResource("Ok");

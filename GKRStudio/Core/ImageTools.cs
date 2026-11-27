@@ -1,4 +1,4 @@
-using System.Buffers.Binary;
+﻿using System.Buffers.Binary;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -267,30 +267,39 @@ public static class ImageTools
         return rtb;
     }
 
-    private static BitmapSource Redact(BitmapSource src, Int32Rect r, string style)
+    private static BitmapSource Redact(BitmapSource src, Int32Rect r, string style) =>
+        Redact(src, new RectangleGeometry(new Rect(r.X, r.Y, r.Width, r.Height)), style);
+
+    /// <summary>Hides the area inside <paramref name="shape"/> (any outline, e.g. a freehand lasso) in image pixels.</summary>
+    public static BitmapSource Redact(BitmapSource src, Geometry shape, string style)
     {
-        r.X = Math.Clamp(r.X, 0, src.PixelWidth - 1);
-        r.Y = Math.Clamp(r.Y, 0, src.PixelHeight - 1);
-        r.Width = Math.Clamp(r.Width, 1, src.PixelWidth - r.X);
-        r.Height = Math.Clamp(r.Height, 1, src.PixelHeight - r.Y);
-        var area = new Rect(r.X, r.Y, r.Width, r.Height);
+        var bounds = Rect.Intersect(shape.Bounds, new Rect(0, 0, src.PixelWidth, src.PixelHeight));
         var visual = new DrawingVisual();
         using (var dc = visual.RenderOpen())
         {
             dc.DrawImage(src, new Rect(0, 0, src.PixelWidth, src.PixelHeight));
-            if (style == "Siyah")
+            if (!bounds.IsEmpty && bounds.Width >= 1 && bounds.Height >= 1)
             {
-                dc.DrawRectangle(Brushes.Black, null, area);
-            }
-            else
-            {
-                // shrink the area a lot, then draw it back stretched: nearest = pixelate, smooth = blur
-                double factor = style == "Piksel" ? Math.Max(8, Math.Min(r.Width, r.Height) / 12.0) : Math.Max(12, Math.Min(r.Width, r.Height) / 6.0);
-                var small = new TransformedBitmap(new CroppedBitmap(src, r), new ScaleTransform(Math.Max(1.0 / r.Width, 1 / factor), Math.Max(1.0 / r.Height, 1 / factor)));
-                var group = new DrawingGroup();
-                RenderOptions.SetBitmapScalingMode(group, style == "Piksel" ? BitmapScalingMode.NearestNeighbor : BitmapScalingMode.HighQuality);
-                using (var g = group.Open()) g.DrawImage(small, area);
-                dc.DrawDrawing(group);
+                var r = new Int32Rect((int)bounds.X, (int)bounds.Y, Math.Max(1, (int)Math.Ceiling(bounds.Right) - (int)bounds.X), Math.Max(1, (int)Math.Ceiling(bounds.Bottom) - (int)bounds.Y));
+                r.Width = Math.Min(r.Width, src.PixelWidth - r.X);
+                r.Height = Math.Min(r.Height, src.PixelHeight - r.Y);
+                var area = new Rect(r.X, r.Y, r.Width, r.Height);
+                dc.PushClip(shape);
+                if (style == "Siyah")
+                {
+                    dc.DrawRectangle(Brushes.Black, null, area);
+                }
+                else
+                {
+                    // shrink the area a lot, then draw it back stretched: nearest = pixelate, smooth = blur
+                    double factor = style == "Piksel" ? Math.Max(8, Math.Min(r.Width, r.Height) / 12.0) : Math.Max(12, Math.Min(r.Width, r.Height) / 6.0);
+                    var small = new TransformedBitmap(new CroppedBitmap(src, r), new ScaleTransform(Math.Max(1.0 / r.Width, 1 / factor), Math.Max(1.0 / r.Height, 1 / factor)));
+                    var group = new DrawingGroup();
+                    RenderOptions.SetBitmapScalingMode(group, style == "Piksel" ? BitmapScalingMode.NearestNeighbor : BitmapScalingMode.HighQuality);
+                    using (var g = group.Open()) g.DrawImage(small, area);
+                    dc.DrawDrawing(group);
+                }
+                dc.Pop();
             }
         }
         var rtb = new RenderTargetBitmap(src.PixelWidth, src.PixelHeight, 96, 96, PixelFormats.Pbgra32);

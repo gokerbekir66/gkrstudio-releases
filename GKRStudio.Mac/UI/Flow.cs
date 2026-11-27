@@ -95,9 +95,9 @@ public static class ActionFlow
                     if (files.Length > 0) MenuHost.ShowForFiles(files); else AppHost.ShutdownIfIdle();
                     return;
                 }
-                case "img:markup" or "img:crop":
+                case "img:markup" or "img:crop" or "img:redact":
                 {
-                    var editor = new ImageEditorWindow(ctx.Inputs[0], action.Id == "img:crop");
+                    var editor = new ImageEditorWindow(ctx.Inputs[0], action.Id == "img:crop", action.Id == "img:redact");
                     editor.Closed += (_, _) => AppHost.ShutdownIfIdle();
                     editor.Show();
                     return;

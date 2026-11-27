@@ -11,10 +11,11 @@ using SkiaSharp;
 
 namespace GKRStudio.Mac;
 
-/// <summary>Image editor: pen, rectangle, arrow, crop, rotate, flip, undo. Each edit is flattened into the bitmap; Save writes a new copy.</summary>
+/// <summary>Image editor: pen, rectangle, arrow, crop, rotate, flip, redact (freehand or rectangle area), undo. Each edit is
+/// flattened into the bitmap; Save writes a new copy ("(düzenlendi)" / "(sansürlü)").</summary>
 public sealed class ImageEditorWindow : Window
 {
-    private enum Tool { Pen, Rect, Arrow, Crop }
+    private enum Tool { Pen, Rect, Arrow, Crop, Redact, RedactFree }
 
     private readonly string input;
     private readonly Stack<SKBitmap> undo = new();
@@ -30,14 +31,21 @@ public sealed class ImageEditorWindow : Window
     private Point start;
     private bool dragging;
     private PixelRect? cropRect;
+    private readonly bool redactMode;
+    private readonly IBrush accent = new SolidColorBrush(AppTheme.Accent(Preferences.Load()));
+    private string redactStyle = "Bulanık";
+    private readonly Dictionary<Tool, Button> toolButtons = [];
+    private readonly Dictionary<string, Button> styleButtons = [];
+    private readonly Border busy;
 
     private static readonly SKColor MarkerColor = new(0xFF, 0xE0, 0x3B, 0x99), RedColor = new(0xFF, 0x3B, 0x30);
 
-    public ImageEditorWindow(string path, bool cropMode)
+    public ImageEditorWindow(string path, bool cropMode, bool redactMode = false)
     {
         input = path;
+        this.redactMode = redactMode;
         bmp = ImageTools.Load(path);
-        tool = cropMode ? Tool.Crop : Tool.Pen;
+        tool = redactMode ? Tool.RedactFree : cropMode ? Tool.Crop : Tool.Pen;
         Title = "GKR Studio — " + System.IO.Path.GetFileName(path);
         Icon = Assets.Icon();
         Width = 1100; Height = 760;
@@ -45,14 +53,30 @@ public sealed class ImageEditorWindow : Window
 
         Button B(string text, Action click) { var b = new Button { Content = L.T(text) }; b.Click += (_, _) => click(); return b; }
         var bar = new WrapPanel { Margin = new Thickness(12, 10, 12, 6) };
-        foreach (var (t, label) in new[] { (Tool.Pen, "🖍 Kalem"), (Tool.Rect, "▭ Dikdörtgen"), (Tool.Arrow, "➜ Ok"), (Tool.Crop, "✂ Kırpma alanı") })
-            bar.Children.Add(B(label, () => { tool = t; ClearOverlay(); }));
+        var tools = redactMode
+            ? new[] { (Tool.RedactFree, "✎ Serbest alan"), (Tool.Redact, "▭ Dikdörtgen alan") }
+            : new[] { (Tool.Pen, "🖍 Kalem"), (Tool.Rect, "▭ Dikdörtgen"), (Tool.Arrow, "➜ Ok"), (Tool.Crop, "✂ Kırpma alanı"), (Tool.RedactFree, "▒ Sansürle") };
+        foreach (var (t, label) in tools)
+        {
+            var b = B(label, () => SetTool(t));
+            toolButtons[t] = b;
+            bar.Children.Add(b);
+        }
+        foreach (var style in new[] { "Bulanık", "Piksel", "Siyah" })
+        {
+            var b = B(style, () => SetStyle(style));
+            styleButtons[style] = b;
+            bar.Children.Add(b);
+        }
         applyCrop = B("Kırp", ApplyCrop);
         applyCrop.IsEnabled = false;
-        bar.Children.Add(applyCrop);
-        bar.Children.Add(B("⟲ Sola", () => Commit(ImageTools.Rotate(bmp, 270))));
-        bar.Children.Add(B("⟳ Sağa", () => Commit(ImageTools.Rotate(bmp, 90))));
-        bar.Children.Add(B("⇋ Yansıt", () => Commit(ImageTools.Flip(bmp))));
+        if (!redactMode)
+        {
+            bar.Children.Add(applyCrop);
+            bar.Children.Add(B("⟲ Sola", () => Commit(ImageTools.Rotate(bmp, 270))));
+            bar.Children.Add(B("⟳ Sağa", () => Commit(ImageTools.Rotate(bmp, 90))));
+            bar.Children.Add(B("⇋ Yansıt", () => Commit(ImageTools.Flip(bmp))));
+        }
         bar.Children.Add(B("↶ Geri al", Undo));
         var save = B("💾 Kaydet", Save);
         save.Classes.Add("accent");
@@ -63,10 +87,28 @@ public sealed class ImageEditorWindow : Window
         var stack = new Grid();
         stack.Children.Add(image);
         stack.Children.Add(overlay);
+        busy = new Border
+        {
+            Background = new SolidColorBrush(Color.FromArgb(0xC0, 0x10, 0x10, 0x14)), CornerRadius = new CornerRadius(10),
+            Padding = new Thickness(22, 14), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center,
+            IsVisible = false, IsHitTestVisible = false,
+            Child = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Children =
+                {
+                    new ProgressBar { IsIndeterminate = true, Width = 90, Height = 6, MinWidth = 90, Margin = new Thickness(0, 0, 12, 0), VerticalAlignment = VerticalAlignment.Center },
+                    new TextBlock { Text = L.T("İşleniyor…"), Foreground = Brushes.White, FontSize = 14, VerticalAlignment = VerticalAlignment.Center },
+                },
+            },
+        };
         var root = new DockPanel();
         DockPanel.SetDock(bar, Dock.Top);
         root.Children.Add(bar);
-        root.Children.Add(new Viewbox { Child = stack, Margin = new Thickness(12), Stretch = Stretch.Uniform });
+        var area = new Grid();
+        area.Children.Add(new Viewbox { Child = stack, Margin = new Thickness(12), Stretch = Stretch.Uniform });
+        area.Children.Add(busy);
+        root.Children.Add(area);
         Content = root;
 
         overlay.PointerPressed += OnDown;
@@ -80,6 +122,41 @@ public sealed class ImageEditorWindow : Window
             if (e.Key == Key.Enter && cropRect != null) ApplyCrop();
         };
         ShowBitmap();
+        SetTool(tool);
+        SetStyle(redactStyle, switchTool: false);
+    }
+
+    private void SetTool(Tool t)
+    {
+        tool = t;
+        ClearOverlay();
+        bool redact = t is Tool.Redact or Tool.RedactFree;
+        foreach (var (k, b) in toolButtons) b.BorderBrush = k == t ? accent : null;
+        foreach (var b in styleButtons.Values) b.Opacity = redact ? 1 : 0.55;
+        overlay.Cursor = new Cursor(t == Tool.Pen || t == Tool.Rect || t == Tool.Arrow ? StandardCursorType.Arrow : StandardCursorType.Cross);
+        if (redact) status.Text = L.T(t == Tool.RedactFree ? "Gizlenecek alanın çevresini fareyle çizin" : "Gizlenecek alanı fareyle sürükleyerek seçin");
+    }
+
+    private void SetStyle(string style, bool switchTool = true)
+    {
+        redactStyle = style;
+        foreach (var (k, b) in styleButtons) b.BorderBrush = k == style ? accent : null;
+        if (switchTool && tool is not (Tool.Redact or Tool.RedactFree)) SetTool(Tool.RedactFree);
+    }
+
+    /// <summary>Redacts inside the window: work runs off the UI thread under a small "working" badge, nothing closes.</summary>
+    private async void ApplyRedact(SKPath shape)
+    {
+        var source = bmp;
+        string style = redactStyle;
+        busy.IsVisible = true;
+        try
+        {
+            var result = await Task.Run(() => { using (shape) return ImageTools.Redact(source, shape, style); });
+            Commit(result);
+        }
+        catch (Exception ex) { await Ask.Info(ex.Message); }
+        finally { busy.IsVisible = false; ClearOverlay(); }
     }
 
     private float Thick(double factor) => (float)Math.Max(3, Math.Min(bmp.Width, bmp.Height) * factor);
@@ -102,6 +179,7 @@ public sealed class ImageEditorWindow : Window
 
     private void OnDown(object? sender, PointerPressedEventArgs e)
     {
+        if (busy.IsVisible) return;
         ClearOverlay();
         start = Pos(e);
         dragging = true;
@@ -109,6 +187,10 @@ public sealed class ImageEditorWindow : Window
         {
             case Tool.Pen:
                 stroke = new Polyline { Stroke = new SolidColorBrush(Color.FromArgb(0x99, 0xFF, 0xE0, 0x3B)), StrokeThickness = Thick(1 / 40.0), StrokeLineCap = PenLineCap.Round, StrokeJoin = PenLineJoin.Round, Points = [start] };
+                overlay.Children.Add(stroke);
+                break;
+            case Tool.RedactFree:
+                stroke = new Polyline { Stroke = Brushes.White, StrokeThickness = Thick(1 / 400.0), StrokeDashArray = [4, 3], Fill = new SolidColorBrush(Color.FromArgb(0x40, 0x5B, 0x8C, 0xFF)), StrokeJoin = PenLineJoin.Round, Points = [start] };
                 overlay.Children.Add(stroke);
                 break;
             case Tool.Arrow:
@@ -185,6 +267,24 @@ public sealed class ImageEditorWindow : Window
                     c.DrawPath(tri, fill);
                 }));
                 break;
+            case Tool.RedactFree when stroke is { Points.Count: > 2 }:
+            {
+                var pts = stroke.Points.ToList();
+                var path = new SKPath();
+                path.MoveTo((float)pts[0].X, (float)pts[0].Y);
+                foreach (var q in pts.Skip(1)) path.LineTo((float)q.X, (float)q.Y);
+                path.Close();
+                if (path.Bounds.Width > 2 && path.Bounds.Height > 2) { ApplyRedact(path); return; }
+                path.Dispose();
+                break;
+            }
+            case Tool.Redact when Math.Abs(end.X - start.X) > 2 && Math.Abs(end.Y - start.Y) > 2:
+            {
+                var path = new SKPath();
+                path.AddRect(SKRect.Create((float)Math.Min(start.X, end.X), (float)Math.Min(start.Y, end.Y), (float)Math.Abs(end.X - start.X), (float)Math.Abs(end.Y - start.Y)));
+                ApplyRedact(path);
+                return;
+            }
             case Tool.Crop:
             {
                 double x = Math.Min(start.X, end.X), y = Math.Min(start.Y, end.Y), w = Math.Abs(end.X - start.X), h = Math.Abs(end.Y - start.Y);
@@ -251,7 +351,7 @@ public sealed class ImageEditorWindow : Window
         try
         {
             string ext = ImageTools.SameFormat(input);
-            string output = OutputPaths.Beside(input, ext, "(düzenlendi)");
+            string output = OutputPaths.Beside(input, ext, redactMode ? "(sansürlü)" : "(düzenlendi)");
             ImageTools.Save(bmp, ext, output);
             status.Text = L.T("Kaydedildi: ") + System.IO.Path.GetFileName(output);
             if (await Ask.YesNo(L.F("Kaydedildi:\n{0}\n\nKlasörde gösterilsin mi?", output))) AppHost.Open(output, reveal: true);

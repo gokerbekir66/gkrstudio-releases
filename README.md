@@ -92,6 +92,8 @@ FFmpeg (GPL), yt-dlp and Deno are bundled in the Windows and macOS packages, so 
 
 | Version | Changes |
 |---|---|
+| 1.3.11 | Redact right in the open image: draw any shape (or a rectangle), pick blur / pixelate / black, applied instantly with undo — no separate progress window |
+| 1.3.10 | OCR detects the text's language and uses the matching recognizer, else the app language |
 | 1.3.9 | Fire takes the hue of your accent colour; settings sections fold open and closed; built-in tools shown under "Built-in tools (advanced)" |
 | 1.3.8 | Fire animation now burns the slice like paper, with big flames, ash and sparks |
 | 1.3.7 | New fire animation when choosing a slice (replaces the lion bite) |

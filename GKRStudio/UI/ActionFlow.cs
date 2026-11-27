@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Media.Imaging;
@@ -25,8 +25,8 @@ public static class ActionFlow
                 case Catalog.PickFiles:
                     PickAndShow(ctx.OutputDir);
                     return;
-                case "img:markup" or "img:crop":
-                    var editor = new ImageEditorWindow(ctx.Inputs[0], cropMode: action.Id == "img:crop");
+                case "img:markup" or "img:crop" or "img:redact":
+                    var editor = new ImageEditorWindow(ctx.Inputs[0], cropMode: action.Id == "img:crop", redactMode: action.Id == "img:redact");
                     editor.Closed += (_, _) => Launcher.ShutdownIfIdle();
                     editor.Show();
                     editor.Activate();

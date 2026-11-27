@@ -308,10 +308,22 @@ public static class ImageTools
 
     private static SKBitmap Redact(SKBitmap src, SKRectI r, string style)
     {
-        r = SKRectI.Intersect(r, SKRectI.Create(src.Width, src.Height));
+        using var path = new SKPath();
+        path.AddRect(SKRect.Create(r.Left, r.Top, r.Width, r.Height));
+        return Redact(src, path, style);
+    }
+
+    /// <summary>Hides the area inside <paramref name="shape"/> (any outline, e.g. a freehand lasso) in image pixels.</summary>
+    public static SKBitmap Redact(SKBitmap src, SKPath shape, string style)
+    {
         var dst = src.Copy();
+        var b = shape.Bounds;
+        var r = SKRectI.Intersect(SKRectI.Create((int)Math.Floor(b.Left), (int)Math.Floor(b.Top), (int)Math.Ceiling(b.Width) + 1, (int)Math.Ceiling(b.Height) + 1), SKRectI.Create(src.Width, src.Height));
+        if (r.Width < 1 || r.Height < 1) return dst;
         using var canvas = new SKCanvas(dst);
         var area = SKRect.Create(r.Left, r.Top, r.Width, r.Height);
+        canvas.Save();
+        canvas.ClipPath(shape, antialias: true);
         if (style == "Siyah")
         {
             using var black = new SKPaint { Color = SKColors.Black };
@@ -329,12 +341,10 @@ public static class ImageTools
         else
         {
             float sigma = Math.Max(6, Math.Min(r.Width, r.Height) / 8f);
-            canvas.Save();
-            canvas.ClipRect(area);
             using var paint = new SKPaint { ImageFilter = SKImageFilter.CreateBlur(sigma, sigma) };
             canvas.DrawBitmap(src, 0, 0, paint);
-            canvas.Restore();
         }
+        canvas.Restore();
         return dst;
     }
 
