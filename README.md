@@ -92,6 +92,7 @@ FFmpeg (GPL), yt-dlp and Deno are bundled in the Windows and macOS packages, so 
 
 | Version | Changes |
 |---|---|
+| 1.3.8 | Fire animation now burns the slice like paper, with big flames, ash and sparks |
 | 1.3.7 | New fire animation when choosing a slice (replaces the lion bite) |
 | 1.3.6 | The QR tool is now called QR reader |
 | 1.3.5 | macOS: the app is signed before it is moved into Applications, so installs no longer hit "Operation not permitted"; leftovers of the old LionMedia version are removed |
@@ -106,10 +107,10 @@ All versions: [Releases](https://github.com/gokerbekir66/gkrstudio-releases/rele
 
 ## Fire animation 🔥
 
-With **Settings → Fire animation when choosing** turned on, the slice you pick bursts into flames, sparks fly up, it chars black and the wheel fades out.
+With **Settings → Fire animation when choosing** turned on, the slice you pick burns like paper: a glowing edge eats it from the rim inward with big flames on top, the burnt part falls away and ash and sparks drift up.
 
 <p align="center">
-  <img src="screenshots/fire.gif" alt="Fire animation: the chosen PNG slice catches fire and burns" width="440">
+  <img src="screenshots/fire.gif" alt="Fire animation: the chosen PNG slice burns away like paper" width="440">
 </p>
 
 ## Settings
