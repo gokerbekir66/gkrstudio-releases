@@ -122,9 +122,32 @@ Right-click menu, background mode and key + right-click wheels, language (Englis
   <img src="screenshots/settings-full.png" alt="Full GKR Studio settings window" width="620">
 </p>
 
+## Source code
+
+The complete source code of GKR Studio is in this repository, so anyone can see exactly what the app does.
+
+| Folder | Contents |
+|---|---|
+| [`GKRStudio/`](GKRStudio) | Windows app (WPF, .NET 8); [`GKRStudio/Core/`](GKRStudio/Core) is the logic shared with macOS |
+| [`GKRStudio.Mac/`](GKRStudio.Mac) | macOS app (Avalonia 11) |
+| [`tools/`](tools) | Release script, installers, update signing tool |
+
+Build it yourself with the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0):
+
+```
+dotnet build GKRStudio/GKRStudio.csproj -c Release
+dotnet build GKRStudio.Mac/GKRStudio.Mac.csproj -c Release
+```
+
+What the app does and doesn't do:
+
+- Files are converted **on your own computer**; nothing is uploaded. The only network traffic is the update check (this repository), downloads you start from a copied link, and language packs or missing tools you choose to download in Settings.
+- No accounts, no ads, no tracking or analytics.
+- Updates are signed; the signing key is kept offline and is not in this repository.
+
 ## Help, feedback and license
 
 - Found a bug or have an idea? Open an [issue](https://github.com/gokerbekir66/gkrstudio-releases/issues/new/choose) — see [CONTRIBUTING.md](CONTRIBUTING.md).
 - Security problems: report them privately, see [SECURITY.md](SECURITY.md).
 - Accessibility: [ACCESSIBILITY.md](ACCESSIBILITY.md) · Code of conduct: [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
-- GKR Studio is free to use; see [LICENSE](LICENSE). FFmpeg, yt-dlp and Deno keep their own licenses.
+- GKR Studio is free and open source under the [MIT license](LICENSE). FFmpeg, yt-dlp, Deno and the libraries keep their own licenses: see [THIRD-PARTY.md](THIRD-PARTY.md).

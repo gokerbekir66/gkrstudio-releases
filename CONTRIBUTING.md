@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping make GKR Studio better! This repository only holds the release packages and documentation; the source code is not public, so code pull requests can't be accepted. You can still help a lot:
+Thanks for helping make GKR Studio better! The full source code is in this repository under the [MIT license](LICENSE).
 
 ## Report a bug
 
@@ -16,14 +16,32 @@ Please don't attach private or confidential files. If a file is needed to reprod
 
 ## Suggest a feature
 
-Open an issue with the **Feature request** template. Describe what you want to do and why, not only how — that helps find the best way to build it.
+Open an issue with the **Feature request** template. Describe what you want to do and why, not only how.
+
+## Code
+
+- `GKRStudio/` — Windows app (WPF, .NET 8). `GKRStudio/Core/` holds the shared logic (wheel catalog, converters, downloader, updater, translations).
+- `GKRStudio.Mac/` — macOS app (Avalonia 11). It links the shared files from `GKRStudio/Core/`; platform code is in `GKRStudio.Mac/Platform/`.
+- `tools/` — release script, installers and the signing tool.
+
+Build:
+
+```
+dotnet build GKRStudio/GKRStudio.csproj -c Release
+dotnet build GKRStudio.Mac/GKRStudio.Mac.csproj -c Release
+```
+
+Guidelines for pull requests:
+
+- Keep the wheel stateless: it is built only from the file type, the clipboard and the settings.
+- Never overwrite the user's files: results go next to the original with a new name.
+- Every user-visible text is Turkish in code and translated in `GKRStudio/Core/L.cs` (English, Dutch, French).
+- One topic per pull request, and describe how you tested it (Windows, macOS or both).
+
+Release builds are signed with a private key that is not in this repository, so only official packages can update installed copies.
 
 ## Translations
 
-GKR Studio speaks English, Turkish, Dutch and French. If a text is wrong, unclear or missing in your language, open an issue with a screenshot and the better wording.
-
-## Documentation
-
-Fixes to the README (typos, unclear steps, better screenshots) are welcome as pull requests to this repository.
+If a text is wrong, unclear or missing in your language, open an issue or a pull request for `GKRStudio/Core/L.cs`.
 
 Please follow the [code of conduct](CODE_OF_CONDUCT.md).

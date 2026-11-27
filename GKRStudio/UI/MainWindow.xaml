@@ -1,0 +1,173 @@
+<Window x:Class="GKRStudio.UI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Style="{StaticResource AppWindow}" Icon="/Assets/app.ico"
+        Title="GKR Studio" Width="720" Height="760" MinWidth="560" MinHeight="520"
+        WindowStartupLocation="CenterScreen">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="24">
+            <DockPanel Margin="0,0,0,18">
+                <Image Source="/Assets/logo.png" Width="56" Height="56" DockPanel.Dock="Left" Margin="0,0,14,0"
+                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="GKR Studio" FontSize="24" FontWeight="Bold"/>
+                    <TextBlock Style="{StaticResource MutedText}"
+                               Text="Görsel ve medya dönüştürme, panodaki linkten video/ses/resim indirme — Gezgin sağ tık menüsünden."/>
+                </StackPanel>
+            </DockPanel>
+
+            <!-- Context menu -->
+            <Border Style="{StaticResource CardBorder}">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource Heading}" Text="Sağ tık menüsü"/>
+                    <TextBlock x:Name="ShellStatus" Margin="0,0,0,10" TextWrapping="Wrap"/>
+                    <WrapPanel>
+                        <Button x:Name="RegisterButton" Style="{StaticResource Primary}" Content="Sağ tık menüsüne ekle" Click="Register_Click"/>
+                        <Button x:Name="UnregisterButton" Content="Sağ tık menüsünden kaldır" Click="Unregister_Click"/>
+                    </WrapPanel>
+                    <TextBlock Style="{StaticResource MutedText}" FontSize="12"
+                               Text="Kayıt HKCU\Software\Classes altına yazılır (yönetici izni gerekmez). Windows 11'de menü &quot;Daha fazla seçenek göster&quot; (Shift+F10) altında görünür. Görsel seçiliyse görsel araçları, video/ses seçiliyse medya araçları, boş alana tıklanırsa panodaki linkin indirme seçenekleri gelir."/>
+                </StackPanel>
+            </Border>
+
+            <!-- Background + shortcuts -->
+            <Border Style="{StaticResource CardBorder}">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource Heading}" Text="Arka plan ve kısayollar"/>
+                    <TextBlock x:Name="ResidentStatus" Margin="0,0,0,10" TextWrapping="Wrap"/>
+                    <WrapPanel>
+                        <Button x:Name="ResidentButton" Style="{StaticResource Primary}" Content="Arka planda başlat" Click="Resident_Click"/>
+                    </WrapPanel>
+                    <CheckBox x:Name="AutostartBox" Content="Windows açılınca arka planda başlat" Margin="0,4,0,6" Foreground="{DynamicResource Fg}"/>
+                    <CheckBox x:Name="ModifierBox" Content="Gezgin'de tuş + sağ tık tekerleklerini kullan" Margin="0,0,0,6" Foreground="{DynamicResource Fg}"/>
+                    <Grid Margin="22,2,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="160"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/><RowDefinition/><RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Dönüştür tekerleği" VerticalAlignment="Center"/>
+                        <ComboBox x:Name="ConvertCombo" Grid.Column="1" Margin="0,3"/>
+                        <TextBlock Grid.Row="1" Text="Araçlar tekerleği" VerticalAlignment="Center"/>
+                        <ComboBox x:Name="ToolsCombo" Grid.Row="1" Grid.Column="1" Margin="0,3"/>
+                        <TextBlock Grid.Row="2" Text="İşlemler tekerleği" VerticalAlignment="Center"/>
+                        <ComboBox x:Name="ActionsCombo" Grid.Row="2" Grid.Column="1" Margin="0,3"/>
+                    </Grid>
+                    <CheckBox x:Name="HotkeyBox" Content="Ctrl+Alt+L: panodaki linkin indirme tekerleği" Margin="0,0,0,6" Foreground="{DynamicResource Fg}"/>
+                    <CheckBox x:Name="TapBox" Content="3 kez hızlıca Ctrl / Alt / Shift: kısayol penceresi" Margin="0,0,0,6" Foreground="{DynamicResource Fg}"/>
+                    <CheckBox x:Name="BiteBox" Content="Seçimde ateş animasyonu 🔥" Margin="0,0,0,6" Foreground="{DynamicResource Fg}"/>
+                    <TextBlock x:Name="PrefsNote" Style="{StaticResource MutedText}" FontSize="12"
+                               Text="Tuş + sağ tık, uygulama arka planda çalışırken Gezgin ve masaüstünde Windows menüsünün yerine tekerleği açar. Ayarlar anında uygulanır."/>
+                </StackPanel>
+            </Border>
+
+            <!-- Appearance -->
+            <Border Style="{StaticResource CardBorder}">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource Heading}" Text="Görünüm"/>
+                    <Grid Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="110"/>
+                            <ColumnDefinition Width="160"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/><RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Dil" VerticalAlignment="Center"/>
+                        <ComboBox x:Name="LanguageCombo" Grid.Column="1" Margin="0,3"/>
+                        <TextBlock Grid.Row="1" Text="Tema" VerticalAlignment="Center"/>
+                        <ComboBox x:Name="ThemeCombo" Grid.Row="1" Grid.Column="1" Margin="0,3"/>
+                    </Grid>
+                    <TextBlock Text="Vurgu rengi" Margin="0,0,0,6"/>
+                    <WrapPanel x:Name="AccentPanel" Margin="0,0,0,8"/>
+                    <CheckBox x:Name="IconsBox" Content="Tekerlekte yazıların altında simge göster" Foreground="{DynamicResource Fg}"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Updates -->
+            <Border Style="{StaticResource CardBorder}">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource Heading}" Text="Güncellemeler"/>
+                    <TextBlock x:Name="VersionText" Style="{StaticResource MutedText}" Margin="0,0,0,8"/>
+                    <TextBlock Text="Güncelleme adresi (update.json)" Margin="0,0,0,4"/>
+                    <TextBox x:Name="FeedBox" Margin="0,0,0,8"/>
+                    <CheckBox x:Name="AutoUpdateBox" Content="Güncellemeleri otomatik denetle" Margin="0,0,0,8" Foreground="{DynamicResource Fg}"/>
+                    <Button Content="Güncellemeleri denetle" HorizontalAlignment="Left" Click="CheckUpdates_Click"/>
+                    <TextBlock Style="{StaticResource MutedText}" FontSize="12"
+                               Text="Güncellemeler dijital imza ve SHA-256 ile doğrulanır; doğrulanamayan paket kurulmaz."/>
+                </StackPanel>
+            </Border>
+
+            <!-- Visible tools -->
+            <Border Style="{StaticResource CardBorder}">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource Heading}" Text="Tekerlekte görünen araçlar"/>
+                    <StackPanel x:Name="VisibilityPanel"/>
+                </StackPanel>
+            </Border>
+
+
+            <!-- Language packs (offline translation) -->
+            <Border Style="{StaticResource CardBorder}">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource Heading}" Text="Dil paketleri (çeviri)"/>
+                    <TextBlock Style="{StaticResource MutedText}" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,10"
+                               Text="Çeviri internetsiz yapılır. Yalnızca istediğiniz dil paketlerini indirin; diğer diller İngilizce üzerinden çevrilir (ör. Türkçe → İngilizce → Felemenkçe)."/>
+                    <StackPanel x:Name="PackList"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Link -->
+            <Border Style="{StaticResource CardBorder}">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource Heading}" Text="Linkten indir"/>
+                    <DockPanel Margin="0,0,0,10">
+                        <Button DockPanel.Dock="Right" Content="Panodan yapıştır" Click="Paste_Click" Margin="8,0,0,0"/>
+                        <TextBox x:Name="LinkBox" TextChanged="LinkBox_TextChanged"/>
+                    </DockPanel>
+                    <TextBlock x:Name="LinkInfoText" Style="{StaticResource MutedText}" Margin="0,0,0,8"/>
+                    <Button x:Name="LinkWheelButton" Style="{StaticResource Primary}" HorizontalAlignment="Left"
+                            Content="◎  İndirme tekerleğini aç" Click="LinkWheel_Click" IsEnabled="False"/>
+                    <TextBlock x:Name="DownloadDirText" Style="{StaticResource MutedText}" FontSize="12"/>
+                    <DockPanel Margin="0,12,0,0">
+                        <TextBlock Text="Tarayıcı çerezleri" VerticalAlignment="Center" Width="170"/>
+                        <ComboBox x:Name="CookieCombo" Width="200" HorizontalAlignment="Left"/>
+                    </DockPanel>
+                    <TextBlock Style="{StaticResource MutedText}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"
+                               Text="Çerez onayı ya da giriş isteyen siteler için: o tarayıcıda siteyi bir kez açıp onaylayın. Chrome/Edge açıkken çerezlerini kilitler; gerekirse kapatın."/>
+                </StackPanel>
+            </Border>
+
+            <!-- Files -->
+            <Border x:Name="DropZone" Style="{StaticResource CardBorder}" AllowDrop="True" Drop="DropZone_Drop" DragOver="DropZone_DragOver">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource Heading}" Text="Dosya dönüştür"/>
+                    <TextBlock x:Name="FileInfoText" Style="{StaticResource MutedText}" Margin="0,0,0,10"
+                               Text="Dosyaları buraya sürükleyin ya da seçin."/>
+                    <WrapPanel>
+                        <Button Content="Dosya seç…" Click="PickFiles_Click"/>
+                        <Button x:Name="FileWheelButton" Style="{StaticResource Primary}" Content="◎  Dönüştürme tekerleğini aç"
+                                Click="FileWheel_Click" IsEnabled="False"/>
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Bundled tools (advanced) -->
+            <Border Style="{StaticResource CardBorder}">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource Heading}" Text="Yerleşik araçlar (gelişmiş)"/>
+                    <StackPanel x:Name="ToolList" Margin="0,0,0,10"/>
+                    <WrapPanel>
+                        <Button x:Name="InstallButton" Content="Araçları onar (winget)" Click="Install_Click"/>
+                        <Button Content="Yenile" Click="Refresh_Click"/>
+                        <Button Content="Araç klasörünü aç" Click="OpenToolsDir_Click"/>
+                    </WrapPanel>
+                    <TextBlock Style="{StaticResource MutedText}" FontSize="12"
+                               Text="ffmpeg (medya dönüştürme), yt-dlp (video/ses indirme) ve deno (YouTube) uygulamayla birlikte gelir; ayrıca bir şey kurmanız gerekmez. Bir araç silinir ya da bozulursa buradan onarabilirsiniz."/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Window>

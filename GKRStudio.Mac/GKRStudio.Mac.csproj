@@ -1,0 +1,73 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>GKRStudio</AssemblyName>
+    <RootNamespace>GKRStudio.Mac</RootNamespace>
+    <Version>1.3.9</Version>
+    <Product>GKR Studio</Product>
+    <ApplicationIcon>..\GKRStudio\Assets\app.ico</ApplicationIcon>
+    <RuntimeIdentifiers>osx-arm64;osx-x64;win-x64</RuntimeIdentifiers>
+    <!-- Never embed local folder paths in the binaries. -->
+    <PathMap>$(MSBuildProjectDirectory)=/src/GKRStudio.Mac,$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..\GKRStudio'))=/src/GKRStudio</PathMap>
+    <DebugType>embedded</DebugType>
+    <Deterministic>true</Deterministic>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.3.23" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.23" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.23" />
+    <PackageReference Include="PDFsharp" Version="6.1.1" />
+    <PackageReference Include="PdfPig" Version="0.1.13" />
+    <PackageReference Include="ZXing.Net" Version="0.16.9" />
+    <PackageReference Include="SharpCompress" Version="0.50.9" />
+    <PackageReference Include="PDFtoImage" Version="4.1.1" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.20.1" />
+  </ItemGroup>
+
+  <!-- Platform-neutral code shared with the Windows app (linked, not copied). -->
+  <ItemGroup>
+    <Compile Include="..\GKRStudio\Core\Catalog.cs" Link="Shared\Catalog.cs" />
+    <Compile Include="..\GKRStudio\Core\LinkParser.cs" Link="Shared\LinkParser.cs" />
+    <Compile Include="..\GKRStudio\Core\L.cs" Link="Shared\L.cs" />
+    <Compile Include="..\GKRStudio\Core\Eta.cs" Link="Shared\Eta.cs" />
+    <Compile Include="..\GKRStudio\Core\Translator.cs" Link="Shared\Translator.cs" />
+    <Compile Include="..\GKRStudio\Core\LanguagePacks.cs" Link="Shared\LanguagePacks.cs" />
+    <Compile Include="..\GKRStudio\Core\TranslateTools.cs" Link="Shared\TranslateTools.cs" />
+    <Compile Include="..\GKRStudio\Core\OutputPaths.cs" Link="Shared\OutputPaths.cs" />
+    <Compile Include="..\GKRStudio\Core\ProcessRunner.cs" Link="Shared\ProcessRunner.cs" />
+    <Compile Include="..\GKRStudio\Core\Ffmpeg.cs" Link="Shared\Ffmpeg.cs" />
+    <Compile Include="..\GKRStudio\Core\MediaTools.cs" Link="Shared\MediaTools.cs" />
+    <Compile Include="..\GKRStudio\Core\Downloader.cs" Link="Shared\Downloader.cs" />
+    <Compile Include="..\GKRStudio\Core\ActionRunner.cs" Link="Shared\ActionRunner.cs" />
+    <Compile Include="..\GKRStudio\Core\SheetTools.cs" Link="Shared\SheetTools.cs" />
+    <Compile Include="..\GKRStudio\Core\SubtitleTools.cs" Link="Shared\SubtitleTools.cs" />
+    <Compile Include="..\GKRStudio\Core\ArchiveTools.cs" Link="Shared\ArchiveTools.cs" />
+    <Compile Include="..\GKRStudio\Core\ZipTools.cs" Link="Shared\ZipTools.cs" />
+    <Compile Include="..\GKRStudio\Core\PdfText.cs" Link="Shared\PdfText.cs" />
+    <Compile Include="..\GKRStudio\Core\PdfToDocx.cs" Link="Shared\PdfToDocx.cs" />
+    <Compile Include="..\GKRStudio\Core\PdfTools.cs" Link="Shared\PdfTools.cs" />
+    <Compile Include="..\GKRStudio\Core\DocTools.cs" Link="Shared\DocTools.cs" />
+    <Compile Include="..\GKRStudio\Core\QrTools.cs" Link="Shared\QrTools.cs" />
+    <Compile Include="..\GKRStudio\Core\OfficeBridge.cs" Link="Shared\OfficeBridge.cs" />
+    <Compile Include="..\GKRStudio\Core\Preferences.cs" Link="Shared\Preferences.cs" />
+    <Compile Include="..\GKRStudio\Core\UiState.cs" Link="Shared\UiState.cs" />
+    <Compile Include="..\GKRStudio\Core\WindowsFontResolver.cs" Link="Shared\WindowsFontResolver.cs" />
+    <Compile Include="..\GKRStudio\Core\Updater.cs" Link="Shared\Updater.cs" />
+    <Compile Include="..\GKRStudio\Core\LegacyCleanup.cs" Link="Shared\LegacyCleanup.cs" />
+    <Compile Include="..\GKRStudio\Core\SelectionCollector.cs" Link="Shared\SelectionCollector.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="..\GKRStudio\Assets\logo.png" Link="Assets\logo.png" />
+    <AvaloniaResource Include="..\GKRStudio\Assets\app.ico" Link="Assets\app.ico" />
+  </ItemGroup>
+
+</Project>

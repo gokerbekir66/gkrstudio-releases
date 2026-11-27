@@ -1,40 +1,21 @@
-GKR Studio — Freeware License
+MIT License
 
-Copyright (c) 2026 gokerbekir66. All rights reserved.
+Copyright (c) 2026 gokerbekir66
 
-1. Permission. You may download, install and use GKR Studio free of charge,
-   for private and commercial purposes, on any number of your own computers.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-2. Sharing. You may pass on the unchanged installation packages exactly as
-   published in this repository, free of charge, with this license included.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-3. Restrictions. Without written permission you may not:
-   a. sell, rent or charge money for GKR Studio or for access to it;
-   b. modify, decompile, disassemble or reverse engineer GKR Studio, except
-      where the law explicitly allows it;
-   c. distribute GKR Studio under another name or as part of another product;
-   d. remove or change copyright notices or this license.
-
-4. Third-party components. GKR Studio packages include separate programs that
-   keep their own licenses and are not covered by this license: FFmpeg (GPL),
-   yt-dlp (Unlicense) and Deno (MIT), plus the libraries listed in
-   tools/LISANSLAR.txt (Windows) and
-   GKR Studio.app/Contents/Resources/licenses (macOS). Their license texts and
-   source links are included in the packages.
-
-5. No warranty. GKR Studio is provided "as is", without warranty of any kind,
-   express or implied, including but not limited to the warranties of
-   merchantability, fitness for a particular purpose and non-infringement.
-   You use it at your own risk and are responsible for keeping backups of
-   your files.
-
-6. Limitation of liability. In no event shall the author be liable for any
-   claim, damages or other liability, whether in an action of contract, tort
-   or otherwise, arising from, out of or in connection with GKR Studio or its
-   use.
-
-7. Downloading content. You are responsible for making sure you have the right
-   to download, convert or use any content you process with GKR Studio.
-
-8. Termination. This license ends automatically if you break its terms; you
-   must then delete all copies of GKR Studio.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
