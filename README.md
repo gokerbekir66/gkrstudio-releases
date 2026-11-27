@@ -14,6 +14,10 @@ Convert, edit and download files straight from a radial wheel — on **Windows**
   <img src="screenshots/wheel-tools.png" alt="Tools wheel for an image: compress, metadata, edit photo, mark up, add background, crop, redact, read QR, OCR" width="380">
   <img src="screenshots/wheel-actions.png" alt="Actions wheel: share, float shelf, copy, move, copy path, terminal, ZIP" width="380">
 </p>
+<p align="center">
+  <img src="screenshots/wheel-pdf-tools.png" alt="Tools wheel for a PDF: compress, metadata, split, organize, OCR, improve text, read QR, translate" width="380">
+  <br><sub>PDF tools: <b>Improve text</b> re-writes blurry scanned text sharply, <b>Translate</b> works offline</sub>
+</p>
 
 ## Download
 
