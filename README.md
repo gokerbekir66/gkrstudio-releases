@@ -120,3 +120,10 @@ Right-click menu, background mode and key + right-click wheels, language (Englis
 <p align="center">
   <img src="screenshots/settings-full.png" alt="Full GKR Studio settings window" width="620">
 </p>
+
+## Help, feedback and license
+
+- Found a bug or have an idea? Open an [issue](https://github.com/gokerbekir66/gkrstudio-releases/issues/new/choose) — see [CONTRIBUTING.md](CONTRIBUTING.md).
+- Security problems: report them privately, see [SECURITY.md](SECURITY.md).
+- Accessibility: [ACCESSIBILITY.md](ACCESSIBILITY.md) · Code of conduct: [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
+- GKR Studio is free to use; see [LICENSE](LICENSE). FFmpeg, yt-dlp and Deno keep their own licenses.

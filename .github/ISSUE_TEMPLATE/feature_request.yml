@@ -1,0 +1,24 @@
+name: Feature request
+description: Suggest a new tool, format or improvement
+labels: [enhancement]
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: What do you want to do?
+      description: Describe the task and why it matters to you.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: How could GKR Studio help?
+      description: For example a new slice on a wheel, a new format or a setting.
+  - type: dropdown
+    id: os
+    attributes:
+      label: Platform
+      multiple: true
+      options:
+        - Windows
+        - macOS
