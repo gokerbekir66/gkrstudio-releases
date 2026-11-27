@@ -11,13 +11,21 @@ Convert, edit and download files straight from a radial wheel — on **Windows**
   <img src="screenshots/wheel-convert.png" alt="Convert wheel for an image: PNG, JPG, WEBP, TIFF, AVIF, BMP, GIF, ICO, PDF" width="380">
 </p>
 <p align="center">
-  <img src="screenshots/wheel-tools.png" alt="Tools wheel for an image: compress, metadata, edit photo, mark up, add background, crop, redact, read QR, OCR" width="380">
   <img src="screenshots/wheel-actions.png" alt="Actions wheel: share, float shelf, copy, move, copy path, terminal, ZIP" width="380">
 </p>
-<p align="center">
-  <img src="screenshots/wheel-pdf-tools.png" alt="Tools wheel for a PDF: compress, metadata, split, organize, OCR, improve text, read QR, translate" width="380">
-  <br><sub>PDF tools: <b>Improve text</b> re-writes blurry scanned text sharply, <b>Translate</b> works offline</sub>
-</p>
+
+## Tools wheel: what each tool does
+
+The **Tools** wheel (Ctrl + right-click) shows different tools for each file type.
+
+**Photos**
+<p align="center"><img src="screenshots/wheel-tools-photo.png" alt="Tools wheel for photos: compress, metadata, edit photo, mark up, add background, crop, redact, QR reader, OCR, each with a short explanation" width="820"></p>
+
+**PDF files**
+<p align="center"><img src="screenshots/wheel-tools-pdf.png" alt="Tools wheel for PDF files: compress, metadata, split, organize, OCR, improve text, QR reader, translate, each with a short explanation" width="820"></p>
+
+**Word documents**
+<p align="center"><img src="screenshots/wheel-tools-word.png" alt="Tools wheel for Word documents: offline translate" width="820"></p>
 
 ## Download
 
@@ -67,6 +75,7 @@ FFmpeg (GPL), yt-dlp and Deno are bundled in the Windows and macOS packages, so 
 
 | Version | Changes |
 |---|---|
+| 1.3.6 | The QR tool is now called QR reader |
 | 1.3.5 | macOS: the app is signed before it is moved into Applications, so installs no longer hit "Operation not permitted"; leftovers of the old LionMedia version are removed |
 | 1.3.4 | macOS: ffmpeg, yt-dlp and Deno are included; video downloads work without Homebrew |
 | 1.3.3 | macOS: fixed a crash when choosing a wheel slice while still holding ⌘ (e.g. Convert → Word) |
@@ -87,7 +96,7 @@ With **Settings → Lion-bite animation when choosing** turned on, the lion bite
 
 ## Settings
 
-Right-click menu, background mode and key + right-click wheels, language (English, Turkish, Dutch, French), theme and accent colour, signed updates, external tools, downloads from a copied link and file conversion.
+Right-click menu, background mode and key + right-click wheels, language (English, Turkish, Dutch, French), theme and accent colour, signed updates, external tools, offline translation language packs, downloads from a copied link and file conversion.
 
 <p align="center">
   <img src="screenshots/settings-full.png" alt="Full GKR Studio settings window" width="620">
