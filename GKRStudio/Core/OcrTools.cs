@@ -13,22 +13,64 @@ namespace GKRStudio.Core;
 /// <summary>
 /// OCR with the engine built into Windows (Windows.Media.Ocr) — no download needed.
 /// PDF → searchable PDF (page image + invisible text layer) + TXT; image → TXT.
-/// Uses Turkish when that language is installed, otherwise the user's profile languages.
+/// The recognizer language is picked from the document itself (see <see cref="PickLanguageAsync"/>).
 /// </summary>
 public static class OcrTools
 {
     private const double Dpi = 200;
 
-    private static OcrEngine Engine(Action<string>? log)
+    private static string Prefix(Language l) => l.LanguageTag.Split('-')[0].ToLowerInvariant();
+
+    private static OcrEngine Create(Language language) =>
+        OcrEngine.TryCreateFromLanguage(language) ?? throw new InvalidOperationException("Windows OCR: " + language.DisplayName);
+
+    /// <summary>
+    /// Chooses the recognizer for this document: the language of the text itself when it can be detected, otherwise the
+    /// app's own language. Windows' Turkish recognizer reads other languages badly ("Hello" → "Heııo") and the others miss
+    /// Turkish letters, so the sample pages are first read with a non-Turkish recognizer and that text's language is detected.
+    /// </summary>
+    private static async Task<Language> PickLanguageAsync(IReadOnlyList<byte[]> samples, Action<string>? log)
     {
-        OcrEngine? engine = null;
-        var tr = new Language("tr");
-        if (OcrEngine.IsLanguageSupported(tr)) engine = OcrEngine.TryCreateFromLanguage(tr);
-        engine ??= OcrEngine.TryCreateFromUserProfileLanguages();
-        if (engine == null)
+        var installed = OcrEngine.AvailableRecognizerLanguages.ToList();
+        if (installed.Count == 0)
             throw new InvalidOperationException("Windows OCR için dil paketi yok. Ayarlar → Saat ve dil → Dil'den Türkçe (veya İngilizce) paketini ekleyin.");
-        log?.Invoke("OCR dili: " + engine.RecognizerLanguage.DisplayName);
-        return engine;
+        Language chosen = installed[0];
+        if (installed.Count > 1)
+        {
+            var appLanguage = installed.FirstOrDefault(l => Prefix(l) == L.Lang);
+            var probeLanguage = appLanguage is { } a && Prefix(a) != "tr" ? a : OcrEngine.TryCreateFromUserProfileLanguages()?.RecognizerLanguage;
+            if (probeLanguage == null || Prefix(probeLanguage) == "tr")
+                probeLanguage = installed.FirstOrDefault(l => Prefix(l) != "tr") ?? installed[0];
+            var probe = Create(probeLanguage);
+            var text = new StringBuilder();
+            foreach (var image in samples)
+            {
+                var (result, _, _) = await RecognizeAsync(probe, new MemoryStream(image));
+                foreach (var line in result.Lines) text.AppendLine(line.Text);
+            }
+            string? code = LanguagePacks.Detect(text.ToString());
+            var detected = installed.FirstOrDefault(l => Prefix(l) == code);
+            if (detected != null) chosen = detected;
+            else if (code != null) chosen = appLanguage ?? probeLanguage; // detected, but that recognizer isn't installed
+            else
+            {
+                // too little text to tell: Turkish only if its recognizer finds letters that exist only in Turkish,
+                // otherwise the app's language
+                chosen = appLanguage ?? probeLanguage;
+                var turkish = installed.FirstOrDefault(l => Prefix(l) == "tr");
+                if (turkish != null && Prefix(chosen) != "tr")
+                {
+                    var trEngine = Create(turkish);
+                    foreach (var image in samples)
+                    {
+                        var (result, _, _) = await RecognizeAsync(trEngine, new MemoryStream(image));
+                        if (result.Lines.Any(l => l.Text.IndexOfAny(['ş', 'Ş', 'ğ', 'Ğ', 'İ']) >= 0)) { chosen = turkish; break; }
+                    }
+                }
+            }
+        }
+        log?.Invoke("OCR dili: " + chosen.DisplayName);
+        return chosen;
     }
 
     private static async Task<(OcrResult Result, uint Width, uint Height)> RecognizeAsync(OcrEngine engine, Stream image)
@@ -40,9 +82,9 @@ public static class OcrTools
 
     public static async Task<string> ImageAsync(string input, Action<string> log, CancellationToken ct)
     {
-        var engine = Engine(log);
-        await using var fs = File.OpenRead(input);
-        var (result, _, _) = await RecognizeAsync(engine, fs);
+        byte[] image = await File.ReadAllBytesAsync(input, ct);
+        var engine = Create(await PickLanguageAsync([image], log));
+        var (result, _, _) = await RecognizeAsync(engine, new MemoryStream(image));
         string text = string.Join(Environment.NewLine, result.Lines.Select(l => l.Text));
         log($"{result.Lines.Count} satır tanındı.");
         string output = OutputPaths.Beside(input, "txt", "(OCR)");
@@ -124,10 +166,13 @@ public static class OcrTools
 
     public static async Task<string> PdfAsync(string input, string? pageSpec, bool alsoText, bool clean, Action<double> frac, Action<string> log, CancellationToken ct)
     {
-        var first = Engine(log);
         var pdf = await PdfRender.OpenAsync(input);
         var pick = PdfTools.Selection(pageSpec, (int)pdf.PageCount); // 0-based page numbers, in order
         int total = pick.Count;
+        // the first (up to) three pages decide the recognizer language; they are kept for the OCR pass below
+        var sampled = new byte[Math.Min(3, total)][];
+        for (int i = 0; i < sampled.Length; i++) sampled[i] = await PdfRender.RenderPageAsync(pdf, (uint)pick[i], "jpg", Dpi, ct);
+        var language = await PickLanguageAsync(sampled, log);
         // Pages are rendered one after another (fast) while several OCR engines read them in parallel (the slow part).
         int workers = Math.Clamp(Environment.ProcessorCount / 2, 1, 6);
         var images = new byte[total][];
@@ -145,7 +190,7 @@ public static class OcrTools
             {
                 for (int i = 0; i < total; i++)
                 {
-                    images[i] = await PdfRender.RenderPageAsync(pdf, (uint)pick[i], "jpg", Dpi, stop.Token);
+                    images[i] = i < sampled.Length ? sampled[i] : await PdfRender.RenderPageAsync(pdf, (uint)pick[i], "jpg", Dpi, stop.Token);
                     await queue.Writer.WriteAsync(i, stop.Token);
                 }
                 queue.Writer.Complete();
@@ -156,7 +201,7 @@ public static class OcrTools
         {
             try
             {
-                var engine = w == 0 ? first : Engine(null);
+                var engine = Create(language);
                 await foreach (int i in queue.Reader.ReadAllAsync(stop.Token))
                 {
                     (results[i], uint w, uint h) = await RecognizeAsync(engine, new MemoryStream(images[i]));

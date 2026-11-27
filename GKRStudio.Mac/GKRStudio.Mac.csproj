@@ -8,7 +8,7 @@
     <LangVersion>latest</LangVersion>
     <AssemblyName>GKRStudio</AssemblyName>
     <RootNamespace>GKRStudio.Mac</RootNamespace>
-    <Version>1.3.9</Version>
+    <Version>1.3.10</Version>
     <Product>GKR Studio</Product>
     <ApplicationIcon>..\GKRStudio\Assets\app.ico</ApplicationIcon>
     <RuntimeIdentifiers>osx-arm64;osx-x64;win-x64</RuntimeIdentifiers>

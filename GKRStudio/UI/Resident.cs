@@ -24,6 +24,8 @@ public static class Resident
     private static bool swallowUp;
     private static Preferences prefs = Preferences.Load();
     private static DateTime prefsStamp;
+    /// <summary>Automated UI tests only (GKR_TEST_INPUT=1): also react to synthetic input, which is normally ignored.</summary>
+    private static readonly bool AcceptInjected = Environment.GetEnvironmentVariable("GKR_TEST_INPUT") == "1";
 
     public static bool IsRunning() => Mutex.TryOpenExisting(MutexName, out var m) && DisposeTrue(m);
     private static bool DisposeTrue(Mutex m) { m.Dispose(); return true; }
@@ -190,7 +192,7 @@ public static class Resident
         if (nCode >= 0)
         {
             var k = Marshal.PtrToStructure<KeyHookInfo>(lParam);
-            if ((k.Flags & 0x10) == 0) // ignore injected keys (e.g. our own Alt-menu cancel)
+            if ((k.Flags & 0x10) == 0 || AcceptInjected) // ignore injected keys (e.g. our own Alt-menu cancel)
             {
                 int msg = wParam.ToInt32();
                 bool down = msg is 0x0100 or 0x0104;
@@ -250,7 +252,7 @@ public static class Resident
             if (msg == 0x0204) // WM_RBUTTONDOWN
             {
                 var info = Marshal.PtrToStructure<MouseHookInfo>(lParam);
-                if ((info.Flags & 0x1) == 0 && TryHandle(info.X, info.Y)) { swallowUp = true; return 1; }
+                if (((info.Flags & 0x1) == 0 || AcceptInjected) && TryHandle(info.X, info.Y)) { swallowUp = true; return 1; }
             }
         }
         return CallNextHookEx(hook, nCode, wParam, lParam);
